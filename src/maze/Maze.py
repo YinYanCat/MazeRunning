@@ -1,20 +1,21 @@
 import random
-import time
 
 import numpy as np
 import pygame
 
 
-
 class Maze:
-    def __init__(self, size=20, cell_size=20, walkback_attempts=0, moves = 400):
+    def __init__(self, size=20, walkback_attempts=0, moves = 400):
         self.goal_y = None
         self.goal_x = None
         self.moves = moves
         self.walkback_attempts =  walkback_attempts
         self.size = size
-        self.cell_size = cell_size
         self.matrix = np.zeros((self.size,self.size))
+        self.create_maze()
+
+    def get_size(self):
+        return self.size
 
     def moveObstacles(self):
         pass
@@ -102,14 +103,10 @@ class Maze:
                 return False
         return True
 
-    def print_maze(self):
-        for row in self.matrix:
-            print("".join(" " if x > 0 else "■"  for x in row))
-
-    def draw(self, screen):
+    def draw(self, screen, cell_size):
         for x in range(self.size):
             for y in range(self.size):
-                rect = pygame.Rect(y*self.cell_size, x*self.cell_size, self.cell_size, self.cell_size)
+                rect = pygame.Rect(y*cell_size, x*cell_size, cell_size, cell_size)
                 if self.matrix[x][y] == 0:
                     color = (0,0,0)  # wall
                 elif self.matrix[x][y] == -1:
@@ -120,27 +117,3 @@ class Maze:
                     color = (255/self.matrix[x][y],255/self.matrix[x][y],255/self.matrix[x][y])  # path
                 pygame.draw.rect(screen, color, rect)
                 pygame.draw.rect(screen, (50,50,50), rect, 1)  # borde
-
-
-#TEMPORAL
-
-maze_size = 100
-cell_size = 5
-
-maze = Maze(size=maze_size, cell_size=cell_size, walkback_attempts=100,moves= 5000)
-maze.create_maze()
-
-screen = pygame.display.set_mode((maze_size*cell_size, maze_size*cell_size))
-pygame.display.set_caption("Maze Generation")
-
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    screen.fill((0,0,0))
-    maze.draw(screen)
-    pygame.display.flip()
-    pygame.time.delay(100)
-
-pygame.quit()
