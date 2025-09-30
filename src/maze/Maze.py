@@ -8,6 +8,8 @@ class Maze:
     def __init__(self, size=20, walkback_attempts=0, moves = 400):
         self.goal_y = None
         self.goal_x = None
+        self.start_y = None
+        self.start_x = None
         self.moves = moves
         self.walkback_attempts =  walkback_attempts
         self.size = size
@@ -16,6 +18,12 @@ class Maze:
 
     def get_size(self):
         return self.size
+
+    def get_start(self):
+        return [self.start_x, self.start_y]
+
+    def get_matrix(self):
+        return self.matrix
 
     def moveObstacles(self):
         pass
