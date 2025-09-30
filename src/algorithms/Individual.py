@@ -24,7 +24,7 @@ class Individual:
     def getGenes(self):
         return self.gen
 
-    def fitness(self):
+    def fitness(self, distance_matrix):
         pass
 
     def run(self, maze):

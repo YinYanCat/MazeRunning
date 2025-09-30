@@ -22,6 +22,9 @@ class Maze:
     def get_start(self):
         return [self.start_x, self.start_y]
 
+    def get_end(self):
+        return [self.goal_x, self.goal_y]
+
     def get_matrix(self):
         return self.matrix
 
@@ -93,6 +96,19 @@ class Maze:
             moves -= 1
         self.matrix[cursor_x][cursor_y] = -2
 
+        for x in range(self.size):
+            for y in range(self.size):
+                if self.matrix[x][y] > 0:
+                    self.matrix[x][y] = 0
+                elif self.matrix[x][y] == -2:
+                    self.start_x = x
+                    self.start_y = y
+                    self.matrix[x][y] = 1
+                elif self.matrix[x][y] == -1:
+                    self.matrix[x][y] = -2
+                else:
+                    self.matrix[x][y] = -1
+
     def is_carveable(self, cursor_x, cursor_y, carve_x, carve_y):
         neigbours = self.cell_neighbours(carve_x,carve_y) + self.cell_corners(carve_x, carve_y)
 
@@ -111,17 +127,23 @@ class Maze:
                 return False
         return True
 
+    def visit_cell(self,x,y):
+        self.matrix[x][y] = -5
+
     def draw(self, screen, cell_size):
         for x in range(self.size):
             for y in range(self.size):
                 rect = pygame.Rect(y*cell_size, x*cell_size, cell_size, cell_size)
-                if self.matrix[x][y] == 0:
+                if self.matrix[x][y] == -1:
                     color = (0,0,0)  # wall
-                elif self.matrix[x][y] == -1:
-                    color = (255,0,0) # goal
                 elif self.matrix[x][y] == -2:
+                    color = (255,0,0) # goal
+                elif self.matrix[x][y] == 1:
                     color = (0,0,255) # starts
+                elif self.matrix[x][y] == -5:
+                    color = (255,255,0) # visits
                 else:
-                    color = (255/self.matrix[x][y],255/self.matrix[x][y],255/self.matrix[x][y])  # path
+                    color = (255,255,255)  # path
                 pygame.draw.rect(screen, color, rect)
                 pygame.draw.rect(screen, (50,50,50), rect, 1)  # borde
+
