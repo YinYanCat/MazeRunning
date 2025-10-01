@@ -5,13 +5,15 @@ import pygame
 
 
 class Maze:
-    def __init__(self, size=20, walkback_attempts=0, moves = 400):
+    def __init__(self, size=20, walkback_attempts=0, moves=400, fake_goal=30, move_walls=5):
         self.goal_y = None
         self.goal_x = None
-        self.start_y = None
-        self.start_x = None
+        self.start = [None, None]
         self.moves = moves
         self.walkback_attempts =  walkback_attempts
+        self.prob_fake_goal = fake_goal
+        self.prob_move_walls = move_walls
+        self.wall_list = []
         self.size = size
         self.matrix = np.zeros((self.size,self.size))
         self.create_maze()
@@ -20,7 +22,7 @@ class Maze:
         return self.size
 
     def get_start(self):
-        return [self.start_x, self.start_y]
+        return self.start
 
     def get_end(self):
         return [self.goal_x, self.goal_y]
@@ -40,7 +42,6 @@ class Maze:
         best = [(x,y) for x,y in candidates if self.matrix[x][y] == min_visits]
 
         return random.choice(best)
-
 
     def cell_neighbours(self, cursor_x, cursor_y):
         neighbours = []
@@ -95,19 +96,37 @@ class Maze:
                     break
             moves -= 1
         self.matrix[cursor_x][cursor_y] = -2
+        self.normalize_maze()
 
+    def normalize_maze(self):
         for x in range(self.size):
             for y in range(self.size):
                 if self.matrix[x][y] > 0:
-                    self.matrix[x][y] = 0       # Path (0) / Path2 (-1)
+                    self.matrix[x][y] = 0       # Path
+                    if np.random.randint(0, self.prob_fake_goal) == 0:
+                        self.matrix[x][y] = -2  # Fake Goal
+                    if np.random.randint(0, self.prob_move_walls) == 0:
+                        self.matrix[x][y] = -1  # Path (Can be Wall)
+                        self.wall_list.append([x, y])
                 elif self.matrix[x][y] == -2:
-                    self.start_x = x
-                    self.start_y = y
-                    self.matrix[x][y] = 1       # Start (1)
+                    self.start = [x, y]
+                    self.matrix[x][y] = 1       # Start
                 elif self.matrix[x][y] == -1:
-                    self.matrix[x][y] = -3      # Fake Goal (-2) / Goal (-3)
+                    self.matrix[x][y] = -3      # Goal
                 else:
-                    self.matrix[x][y] = -4      # Wall (-4) / Wall2 (-5)
+                    self.matrix[x][y] = -4      # Wall
+                    if np.random.randint(0, self.prob_move_walls) == 0:
+                        self.matrix[x][y] = -5  # Wall (Can be Path)
+                        self.wall_list.append([x, y])
+
+    def switch_walls(self, probability):
+        for i in range(len(self.wall_list)):
+            if self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] == -1:
+                if np.random.randint(0, probability) == 1:
+                    self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -5
+            else:
+                self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -1
+
 
     def is_carveable(self, cursor_x, cursor_y, carve_x, carve_y):
         neigbours = self.cell_neighbours(carve_x,carve_y) + self.cell_corners(carve_x, carve_y)
@@ -121,14 +140,13 @@ class Maze:
         if (dx, dy) == (1, 0) or (dx, dy) == (-1, 0):
             neigbours = [(x, y) for x, y in neigbours if (x, y) not in [(cursor_x, cursor_y - 1), (cursor_x, cursor_y + 1)]]
 
-
         for x,y in neigbours:
             if self.matrix[x][y] > 0:
                 return False
         return True
 
-    def visit_cell(self,x,y):
-        self.matrix[x][y] = -6
+    def visit_cell(self, x, y, value):
+        self.matrix[x][y] = value
 
     def draw(self, screen, cell_size):
         for x in range(self.size):
@@ -137,7 +155,7 @@ class Maze:
                 if self.matrix[x][y] == 0:      # Path
                     color = (230,230,230)
                 elif self.matrix[x][y] == -1:   # Path (Can be Wall)
-                    color = (200,200,200)
+                    color = (230,230,230)
                 elif self.matrix[x][y] == -2:   # Fake Goal
                     color = (255,20,20)
                 elif self.matrix[x][y] == -3:   # Goal
@@ -145,12 +163,15 @@ class Maze:
                 elif self.matrix[x][y] == -4:   # Wall
                     color = (0,0,0)
                 elif self.matrix[x][y] == -5:   # Wall (Can be Path)
-                    color = (55,55,55)
+                    color = (0,0,0)
                 elif self.matrix[x][y] == -6:   # Visits
-                    color = (255,255,50)
+                    color = (255,255,0)
+                elif self.matrix[x][y] == -7:   # Fill
+                    color = (255,150,50)
                 else:                           # Start (1)
                     color = (0,0,255)
 
                 pygame.draw.rect(screen, color, rect)
                 pygame.draw.rect(screen, (50,50,50), rect, 1)  # borde
+
 
