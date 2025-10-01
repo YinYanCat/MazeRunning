@@ -35,6 +35,12 @@ class Maze:
     def moveObstacles(self):
         pass
 
+    def get_cell(self, x, y):
+        return self.matrix[x][y]
+
+    def set_cell(self, x, y, value):
+        self.matrix[x][y] = value
+
     def next_expandable(self, cursor_x, cursor_y):
         neighbours = self.cell_neighbours(cursor_x,cursor_y)
         candidates = [(x,y) for x,y in neighbours if self.matrix[x][y]>0]
@@ -121,15 +127,26 @@ class Maze:
                         self.matrix[x][y] = self.unsearched_matrix[x][y] = -5  # Wall (Can be Path)
                         self.wall_list.append([x, y])
 
-    def switch_walls(self, probability):
+    def switch_walls(self, probability, x=None, y=None):
         for i in range(len(self.wall_list)):
             if self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] == -1:
-                if np.random.randint(0, probability) == 1:
-                    self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -5
-                    self.unsearched_matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -5
+                if (x is None and y is None) or (x != self.wall_list[i][0] and y != self.wall_list[i][1]):
+                    if np.random.randint(0, probability) == 1:
+                        self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -5
+                        self.unsearched_matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -5
             else:
                 self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -1
                 self.unsearched_matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -1
+
+    def get_move_list(self):
+        move_list = []
+        for i in range(len(self.wall_list)):
+            move_list.append(self.matrix[self.wall_list[i][0]][self.wall_list[i][1]])
+        return move_list
+
+    def set_movable_values(self, values_list):
+        for i in range(len(self.wall_list)):
+            self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = values_list[i]
 
     def unsearch_matrix(self):
         self.matrix = self.unsearched_matrix
@@ -151,9 +168,6 @@ class Maze:
             if self.matrix[x][y] > 0:
                 return False
         return True
-
-    def visit_cell(self, x, y, value):
-        self.matrix[x][y] = value
 
     def draw(self, screen, cell_size):
         for x in range(self.size):

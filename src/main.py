@@ -12,8 +12,8 @@ from src.visuals.Visuals import Visual
 def main():
 
     print('\n-------------\nPROGRAM KEYS:\n-------------')
-    print('[B] BFS Algorithm\n[N] BFS Original Path and Maze\n[M] BFS Best Path and Maze Found')
-    print('[G] Genetic Algorithm')
+    print('[B] BFS Algorithm (Toggle to Pause)\n[N] BFS Original Path and Maze\n[M] BFS Best Path and Maze Found')
+    print('[G] Genetic Algorithm (Toggle to Pause)\n[I] Instance Visual (Toggle)')
 
     maze_size = 10
     maze_walk_att = maze_size * 3
@@ -35,8 +35,9 @@ def main():
     distance_mat = distance_matrix(distance_maze)
 
     visual_maze = copy.deepcopy(maze)
-    visual = Visual(20)
+    visual = Visual(40)
     visual.set_maze(visual_maze)
+    instant_visual = False
 
     running = True
     while running and visual:
@@ -44,20 +45,22 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
+
+                if event.key == pygame.K_i:
+                    instant_visual = not instant_visual
+                    print_toggle(instant_visual, 'Instant Visual')
+
                 if event.key == pygame.K_b:
                     Gen_Search = False
                     BFS_Search = not BFS_Search
-                    if BFS_Search:
-                        print('Breadth-first search algorithm [Activated]')
-                    else:
-                        print('Breadth-first search algorithm [Deactivate]')
+                    print_toggle(BFS_Search, 'Breadth-first search algorithm')
 
                 if event.key == pygame.K_n:
                     if first_bfs is not None:
                         print('Original Breadth-first search path')
                         BFS_Search = False
                         visual_maze = copy.deepcopy(maze)
-                        draw_path_maze(visual, visual_maze, first_bfs, -6)
+                        draw_path(visual, visual_maze, first_bfs, -6)
                     else:
                         print('ERROR N: BFS has not been executed first ([B] Key)')
 
@@ -67,13 +70,14 @@ def main():
                         BFS_Search = False
                         best_bfs_maze.unsearch_matrix()
                         visual_maze = copy.deepcopy(best_bfs_maze)
-                        draw_path_maze(visual, visual_maze, best_bfs, -6)
+                        draw_path(visual, visual_maze, best_bfs, -6)
                     else:
                         print('ERROR M: BFS has not been executed first ([B] Key)')
 
                 if event.key == pygame.K_g:
-                    Gen_Search = True
                     BFS_Search = False
+                    Gen_Search = not Gen_Search
+                    print_toggle(Gen_Search, 'Genetic algorithm')
 
                 if event.key == pygame.K_d:
                     print('Distance Matrix from Goal:')
@@ -97,40 +101,61 @@ def main():
                 best_bfs_maze = copy.deepcopy(bfs_maze)
             if first_bfs is None:
                 first_bfs = copy.deepcopy(search)
-            draw_path_maze(visual, visual_maze, toview, value)
+
+            draw_path(visual, visual_maze, toview, value)
             time.sleep(1)
             bfs_maze.unsearch_matrix()
             bfs_maze.switch_walls(maze_switch)
 
-
         elif Gen_Search:
-            search_maze = copy.deepcopy(gen_maze)
-            history = geneticAlgorithm(maze=search_maze, distance_matrix=distance_mat, max_generations=maze_size*maze_size*2,individual_count=10, until_finds=False)
+            visual_maze = copy.deepcopy(gen_maze)
+            visual.set_maze(visual_maze)
+            visual.draw()
+            print('Calculating Path...')
+            history, move_matrix = geneticAlgorithm(maze=gen_maze, distance_matrix=distance_mat, max_generations=maze_size*maze_size*2,individual_count=10, until_finds=False)
             goal_x, goal_y = maze.get_end()
             if history[-1] == (int(goal_x), int(goal_y)):
                 print(f"Steps to find the goal: {len(history)}")
             else:
-                print(f"ended at {history[-1]} goal was at {goal_x, goal_y}")
+                #print(f"ended at {history[-1]} goal was at {int(goal_x), int(goal_y)}")
                 print(f"Couldn't find goal, total steps: {len(history)}")
             for i in range(len(history)):
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_g:
+                            Gen_Search = False
+                            print_toggle(Gen_Search, 'Genetic algorithm')
+                if not Gen_Search:
+                    break
                 x, y = history[i]
-                if i != 0:
-                    visual_maze.visit_cell(x, y, -6)
+                if not instant_visual:
+                    visual_maze.set_movable_values(move_matrix[i])
+                aux = visual_maze.get_cell(x, y)
+                visual_maze.set_cell(x, y, -6)
+                if not instant_visual:
+                    visual.draw()
+                    time.sleep(0.5)
+                    visual_maze.set_cell(x, y, aux)
                 visual.draw()
-            #time.sleep(0.03)
-            visual_maze = copy.deepcopy(gen_maze)
-            visual.set_maze(visual_maze)
-
+            time.sleep(1)
 
     pygame.quit()
 
-def draw_path_maze(visual, maze, path, color):
+def draw_path(visual, maze, path, color):
     visual.set_maze(maze)
     for i in range(len(path)):
         x, y = path[i]
         if i != 0:
-            maze.visit_cell(x, y, color)
+            maze.set_cell(x, y, color)
         visual.draw()
+
+def print_toggle(toggle, name):
+    if toggle:
+        print(name, '[Activated]')
+    else:
+        print(name, '[Deactivate]')
 
 if __name__ =="__main__":
     main()

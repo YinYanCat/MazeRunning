@@ -12,7 +12,10 @@ def geneticAlgorithm(distance_matrix, maze, max_generations, individual_count=10
     start_x, start_y = maze.get_start()
     individuals = [Individual(start_x,start_y) for i in range(individual_count)]
     while until_finds is True or generation < max_generations:
-        prob_fitness_cross = generation / max_generations / 10
+        if until_finds is False:
+            prob_fitness_cross = generation / max_generations / 10
+        else:
+            prob_fitness_cross = generation / maze.get_size()*maze.get_size() / 10
 
         for individual in individuals:
             individual.run(maze, distance_matrix)
@@ -43,4 +46,5 @@ def geneticAlgorithm(distance_matrix, maze, max_generations, individual_count=10
     for individual in individuals:
         if individual.getMaxFitness() < fittest.getMaxFitness():
             fittest = individual
-    return fittest.getHistory()
+
+    return fittest.getHistory(), fittest.getMoveMatrix()

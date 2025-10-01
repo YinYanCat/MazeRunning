@@ -10,6 +10,7 @@ class Individual:
         self.gen = [random.choice(self.moves)]
         self.fitness_evaluation = []
         self.history = []
+        self.wall_matrix = []
         self.max_fitness = None
 
     def setGenes(self, gen):
@@ -27,8 +28,6 @@ class Individual:
         new_individual = Individual(self.start_x, self.start_y)
         new_individual.setGenes(crossed_genes)
         return new_individual
-
-
 
     def fitnessCross(self, individual):
         if len(self.gen) > 0 and len(individual.getGenes()) > 0:
@@ -83,6 +82,9 @@ class Individual:
         opposites = {'U':'D', 'L':'R', 'R':'L', 'D':'U'}
 
         for move in self.gen:
+
+            maze.switch_walls(2, self.x, self.y)
+
             next_x, next_y = self.x, self.y
 
             if move == 'U':
@@ -129,12 +131,14 @@ class Individual:
             # Calcular fitness después de moverse
             current_fitness = self.fitness(self.x, self.y, distance_matrix) + penalty
             self.history.append((self.x, self.y))
+            self.wall_matrix.append(maze.get_move_list())
             self.fitness_evaluation.append(current_fitness)
 
             if current_fitness < self.max_fitness:
                 self.max_fitness = current_fitness
 
-        return self.history
-
     def getHistory(self):
         return self.history
+
+    def getMoveMatrix(self):
+        return self.wall_matrix
