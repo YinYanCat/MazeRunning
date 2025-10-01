@@ -10,7 +10,6 @@ from src.maze.Maze import Maze
 from src.visuals.Visuals import Visual
 
 def main():
-
     print('\n-------------\nPROGRAM KEYS:\n-------------')
     print('[B] BFS Algorithm (Toggle to Pause)\n[N] BFS Original Path and Maze\n[M] BFS Best Path and Maze Found')
     print('[G] Genetic Algorithm (Toggle to Pause)\n[I] Instance Visual (Toggle)')

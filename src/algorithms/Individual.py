@@ -65,7 +65,7 @@ class Individual:
     def fitness(self, x, y, distance_matrix):
         return distance_matrix[x][y] / len(distance_matrix[0])
 
-    def run(self, maze, distance_matrix):
+    def run(self, maze, distance_matrix, saves_maze_changes):
         self.action_stack = []
         penalty = 0
 
@@ -131,7 +131,10 @@ class Individual:
             # Calcular fitness después de moverse
             current_fitness = self.fitness(self.x, self.y, distance_matrix) + penalty
             self.history.append((self.x, self.y))
-            self.wall_matrix.append(maze.get_move_list())
+
+            if saves_maze_changes:
+                self.wall_matrix.append(maze.get_move_list())
+
             self.fitness_evaluation.append(current_fitness)
 
             if current_fitness < self.max_fitness:
