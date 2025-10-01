@@ -146,43 +146,47 @@ def visual_search():
 def test_time():
     maze_size = 10
     probability = [0, 0]
-    type = int(input("BFS [0] or Genetic [1]: "))
     mazes = int(input("Number of Mazes: "))
     cycles = int(input("Number of Cycles per Maze: "))
     iterations = int(input("Number of Iterations per Cycle: "))
 
-
+    test_start = time.perf_counter()
     for i in range(mazes):
         maze = Maze(maze_size, maze_size, maze_size * maze_size, 30, 5)
-        if type == 0:
-            with open("MazeBFS_" + str(i + 1) + ".csv", "a") as file:
-                for j in range(cycles):
-                    probability = [probability[0] + 2, probability[1] + 1]
-                    for k in range(iterations):
-                        start = time.perf_counter()
-                        breadthFirstSearch(maze)
-                        end = time.perf_counter()
-                        maze.unsearch_matrix()
-                        maze.switch_walls(probability[0], probability[1])
-                        file.write(str(end-start)+"; ")
-                    file.write("\n")
-                file.close()
-
-        else:
-            distance_maze = copy.deepcopy(maze)
-            distance_mat = distance_matrix(distance_maze)
-            maze_size = maze.get_size()
-            with open("MazeGen_" + str(i + 1) + ".csv", "a") as file:
-                for j in range(cycles):
-                    probability = [probability[0] + 2, probability[1] + 1]
-                    for k in range(iterations):
-                        start = time.perf_counter()
-                        geneticAlgorithm(maze, distance_mat, maze_size*maze_size*2, False, probability,10, False)
-                        end = time.perf_counter()
-                        file.write(str(end - start) + "; ")
-                    file.write("\n")
-                file.close()
-
+        distance_maze = copy.deepcopy(maze)
+        distance_mat = distance_matrix(distance_maze)
+        maze_size = maze.get_size()
+        with open("MazeBFS_" + str(i + 1) + ".csv", "w") as file:
+            for j in range(cycles):
+                file.write("1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
+                for k in range(iterations):
+                    start = time.perf_counter()
+                    breadthFirstSearch(maze)
+                    end = time.perf_counter()
+                    maze.unsearch_matrix()
+                    maze.switch_walls(probability[0], probability[1])
+                    file.write(str(end-start)+"; ")
+                    print("BFS iteration ends")
+                file.write("\n")
+                print("BFS ends")
+                probability = [probability[0] + 2, probability[1] + 1]
+            file.close()
+        with open("MazeGen_" + str(i + 1) + ".csv", "w") as file:
+            for j in range(cycles):
+                probability = [probability[0] + 2, probability[1] + 1]
+                file.write("1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
+                for k in range(iterations):
+                    start = time.perf_counter()
+                    geneticAlgorithm(maze, distance_mat, maze_size*maze_size*2, False, probability,10, False)
+                    end = time.perf_counter()
+                    file.write(str(end - start) + "; ")
+                    print("Genetic iteration ends")
+                print("Genetic ends")
+                file.write("\n")
+                probability = [probability[0] + 2, probability[1] + 1]
+            file.close()
+    test_end = time.perf_counter()
+    print(f"Test finished after: {test_end-test_start}")
 
 def draw_path(visual, maze, path, color):
     visual.set_maze(maze)
