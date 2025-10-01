@@ -99,15 +99,15 @@ class Maze:
         for x in range(self.size):
             for y in range(self.size):
                 if self.matrix[x][y] > 0:
-                    self.matrix[x][y] = 0
+                    self.matrix[x][y] = 0       # Path (0) / Path2 (-1)
                 elif self.matrix[x][y] == -2:
                     self.start_x = x
                     self.start_y = y
-                    self.matrix[x][y] = 1
+                    self.matrix[x][y] = 1       # Start (1)
                 elif self.matrix[x][y] == -1:
-                    self.matrix[x][y] = -2
+                    self.matrix[x][y] = -3      # Fake Goal (-2) / Goal (-3)
                 else:
-                    self.matrix[x][y] = -1
+                    self.matrix[x][y] = -4      # Wall (-4) / Wall2 (-5)
 
     def is_carveable(self, cursor_x, cursor_y, carve_x, carve_y):
         neigbours = self.cell_neighbours(carve_x,carve_y) + self.cell_corners(carve_x, carve_y)
@@ -128,22 +128,29 @@ class Maze:
         return True
 
     def visit_cell(self,x,y):
-        self.matrix[x][y] = -5
+        self.matrix[x][y] = -6
 
     def draw(self, screen, cell_size):
         for x in range(self.size):
             for y in range(self.size):
                 rect = pygame.Rect(y*cell_size, x*cell_size, cell_size, cell_size)
-                if self.matrix[x][y] == -1:
-                    color = (0,0,0)  # wall
-                elif self.matrix[x][y] == -2:
-                    color = (255,0,0) # goal
-                elif self.matrix[x][y] == 1:
-                    color = (0,0,255) # starts
-                elif self.matrix[x][y] == -5:
-                    color = (255,255,0) # visits
-                else:
-                    color = (255,255,255)  # path
+                if self.matrix[x][y] == 0:      # Path
+                    color = (230,230,230)
+                elif self.matrix[x][y] == -1:   # Path (Can be Wall)
+                    color = (200,200,200)
+                elif self.matrix[x][y] == -2:   # Fake Goal
+                    color = (255,20,20)
+                elif self.matrix[x][y] == -3:   # Goal
+                    color = (0,255,0)
+                elif self.matrix[x][y] == -4:   # Wall
+                    color = (0,0,0)
+                elif self.matrix[x][y] == -5:   # Wall (Can be Path)
+                    color = (55,55,55)
+                elif self.matrix[x][y] == -6:   # Visits
+                    color = (255,255,50)
+                else:                           # Start (1)
+                    color = (0,0,255)
+
                 pygame.draw.rect(screen, color, rect)
                 pygame.draw.rect(screen, (50,50,50), rect, 1)  # borde
 

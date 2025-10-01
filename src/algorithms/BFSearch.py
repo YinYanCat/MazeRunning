@@ -16,21 +16,20 @@ def breadthFirstSearch(maze):
 
     while end is None:
         parent = queue[0]
+        history.append(parent)
         for child in maze.cell_neighbours(parent[0], parent[1]):
-            if matrix[child[0]][child[1]] == 0:
+            if 1 > matrix[child[0]][child[1]] > -3:   # Walkable Cell
                 matrix[child[0]][child[1]] = matrix[parent[0]][parent[1]] + 1
                 queue.append(child)
-                history.append(child)
-            elif matrix[child[0]][child[1]] == -2:
+            elif matrix[child[0]][child[1]] == -3:
                 matrix[child[0]][child[1]] = matrix[parent[0]][parent[1]] + 1
-                queue.append(child)
+                queue = [child]
                 end = child
                 break
         queue.pop(0)
 
     route = get_route(maze, matrix, end)
     return route, history
-
 
 def distance_matrix(maze):
     matrix = maze.get_matrix()
@@ -59,6 +58,5 @@ def get_route(maze, matrix, end):
                 break
     for i in range(len(reverse_route)):
         route.append(reverse_route[len(reverse_route) - i - 1])
-
     return route
 

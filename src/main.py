@@ -15,7 +15,7 @@ def main():
     visual_maze = copy.deepcopy(maze)
     printed = False
 
-    visual = Visual(10)
+    visual = Visual(20)
     visual.set_maze(visual_maze)
 
     running = True
@@ -34,13 +34,11 @@ def main():
             toview= history
             for i in range(len(toview)):
                 x, y = toview[i]
-                print(x,y)
                 if i != 0:
                     visual_maze.visit_cell(x,y)
                 visual.draw()
                 #time.sleep(0.01)
             printed = True
-        #distances_to_goal(maze)
 
     pygame.quit()
 
