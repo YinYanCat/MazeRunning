@@ -3,6 +3,7 @@ import random
 class Individual:
 
     def __init__(self, x, y):
+        self.action_stack = None
         self.moves = ['U','D','L','R']
         self.start_x, self.start_y = x, y
         self.x, self.y = x, y
@@ -55,16 +56,20 @@ class Individual:
     def mutate(self):
         self.gen[random.randint(0,len(self.gen)-1)] = random.choice(self.moves)
 
-    def grow(self):
-        self.gen.append(random.choice(self.moves))
+    def grow(self, size):
+        for i in range (size):
+            self.gen.append(random.choice(self.moves))
 
     def getGenes(self):
         return self.gen
 
     def fitness(self, x, y, distance_matrix):
-        return distance_matrix[x][y]
+        return distance_matrix[x][y] / len(distance_matrix[0])
 
     def run(self, maze, distance_matrix):
+        self.action_stack = []
+        penalty = 0
+
         matrix = maze.get_matrix()
         size = maze.get_size()
         self.x, self.y = self.start_x, self.start_y
@@ -74,6 +79,8 @@ class Individual:
         initial_fitness = self.fitness(self.x, self.y, distance_matrix)
         self.fitness_evaluation = [initial_fitness]
         self.max_fitness = initial_fitness
+
+        opposites = {'U':'D', 'L':'R', 'R':'L', 'D':'U'}
 
         for move in self.gen:
             next_x, next_y = self.x, self.y
@@ -87,6 +94,16 @@ class Individual:
             elif move == 'R':
                 next_x += 1
 
+            # Manejo de retrocesos
+            if self.action_stack and self.action_stack[-1] == opposites[move]:
+                penalty += 2
+                if len(self.action_stack) > 1:
+                    self.action_stack.pop()
+                else:
+                    self.action_stack.append(move)
+            else:
+                self.action_stack.append(move)
+
             # Verificar límites
             if 0 <= next_x < size and 0 <= next_y < size:
                 next_cell = matrix[next_x][next_y]
@@ -94,24 +111,26 @@ class Individual:
                 if next_cell == -3:  # meta
                     self.x, self.y = next_x, next_y
                     self.history.append((self.x, self.y))
-                    current_fitness = 0
-                    self.fitness_evaluation.append(current_fitness)
+                    self.fitness_evaluation.append(0)
                     self.max_fitness = 0
                     break
-                elif next_cell in (0, -1, -2):  # camino válido
+                elif next_cell in (0, 1, -1, -2):  # camino válido
                     self.x, self.y = next_x, next_y
                 else:  # golpea pared
                     # Penalización
-                    self.fitness_evaluation.append(self.fitness_evaluation[-1] + 1)
+                    current_fitness = self.fitness(self.x, self.y, distance_matrix) + penalty + 8
+                    self.fitness_evaluation.append(current_fitness)
                     continue
             else:  # fuera de límites
-                self.fitness_evaluation.append(self.fitness_evaluation[-1] + 1)
+                current_fitness = self.fitness(self.x, self.y, distance_matrix) + penalty + 10
+                self.fitness_evaluation.append(current_fitness)
                 continue
 
             # Calcular fitness después de moverse
-            current_fitness = self.fitness(self.x, self.y, distance_matrix)
-            self.history.append((self.x,self.y))
+            current_fitness = self.fitness(self.x, self.y, distance_matrix) + penalty
+            self.history.append((self.x, self.y))
             self.fitness_evaluation.append(current_fitness)
+
             if current_fitness < self.max_fitness:
                 self.max_fitness = current_fitness
 

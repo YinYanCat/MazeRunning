@@ -3,16 +3,7 @@ import random
 from src.algorithms.Individual import Individual
 
 def choice(individuals) -> Individual:
-    max_fitness = min(individual.getMaxFitness() for individual in individuals)
-    scores = [1 / max(1,(individual.getMaxFitness() - max_fitness)) for individual in individuals]
-
-    total = sum(scores)
-    pick = random.uniform(0,total)
-    current = 0
-    for individual, score in zip(individuals, scores):
-        current += score
-        if current >= pick:
-            return individual
+    return random.choice(individuals)
 
 
 def geneticAlgorithm(distance_matrix, maze, max_generations, individual_count=10, until_finds=True):
@@ -21,7 +12,7 @@ def geneticAlgorithm(distance_matrix, maze, max_generations, individual_count=10
     start_x, start_y = maze.get_start()
     individuals = [Individual(start_x,start_y) for i in range(individual_count)]
     while until_finds is True or generation < max_generations:
-        prob_fitness_cross = generation / max_generations
+        prob_fitness_cross = generation / max_generations / 10
 
         for individual in individuals:
             individual.run(maze, distance_matrix)
@@ -41,7 +32,7 @@ def geneticAlgorithm(distance_matrix, maze, max_generations, individual_count=10
 
             if random.randint(0,1) == 1:
                 child.mutate()
-                child.grow()
+            child.grow(1)
             child.run(maze = maze, distance_matrix=distance_matrix)
             new_individuals.append(child)
 

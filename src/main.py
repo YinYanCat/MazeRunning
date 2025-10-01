@@ -15,9 +15,9 @@ def main():
     print('[B] BFS Algorithm\n[N] BFS Original Path and Maze\n[M] BFS Best Path and Maze Found')
     print('[G] Genetic Algorithm')
 
-    maze_size = 30
-    maze_walk_att = 200
-    maze_moves = 900
+    maze_size = 10
+    maze_walk_att = maze_size * 3
+    maze_moves = maze_size * maze_size
     maze_fake_goal = 30
     maze_move_wall = 5
     maze_switch = 3
@@ -105,13 +105,19 @@ def main():
 
         elif Gen_Search:
             search_maze = copy.deepcopy(gen_maze)
-            history = geneticAlgorithm(maze=search_maze, distance_matrix=distance_mat, max_generations=200,individual_count=10, until_finds=True)
+            history = geneticAlgorithm(maze=search_maze, distance_matrix=distance_mat, max_generations=maze_size*maze_size*2,individual_count=10, until_finds=False)
+            goal_x, goal_y = maze.get_end()
+            if history[-1] == (int(goal_x), int(goal_y)):
+                print(f"Steps to find the goal: {len(history)}")
+            else:
+                print(f"ended at {history[-1]} goal was at {goal_x, goal_y}")
+                print(f"Couldn't find goal, total steps: {len(history)}")
             for i in range(len(history)):
                 x, y = history[i]
                 if i != 0:
                     visual_maze.visit_cell(x, y, -6)
                 visual.draw()
-            #time.sleep(3)
+            #time.sleep(0.03)
             visual_maze = copy.deepcopy(gen_maze)
             visual.set_maze(visual_maze)
 
