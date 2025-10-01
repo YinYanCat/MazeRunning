@@ -1,9 +1,6 @@
 import time
 
 import pygame
-import csv
-
-from src.algorithms.Individual import *
 from src.algorithms.Genetics import *
 import copy
 from src.algorithms.BFSearch import *
@@ -18,11 +15,13 @@ def visual_search():
     maze_size = 10
     maze_walk_att = maze_size * 3
     maze_moves = maze_size * maze_size
-    maze_fake_goal = 30
+    maze_fake_goal = 20
     maze_move_wall = 5
     maze_probability = [4,1]
 
     maze = Maze(maze_size,maze_walk_att,maze_moves,maze_fake_goal,maze_move_wall)
+    delete_fake_goal_path(maze)
+
     bfs_maze = copy.deepcopy(maze)
     BFS_Search = False
     first_bfs = None
@@ -35,7 +34,7 @@ def visual_search():
     distance_mat = distance_matrix(distance_maze)
 
     visual_maze = copy.deepcopy(maze)
-    visual = Visual(20)
+    visual = Visual(40)
     visual.set_maze(visual_maze)
     instant_visual = False
 
@@ -143,51 +142,6 @@ def visual_search():
 
     pygame.quit()
 
-def test_time():
-    maze_size = 10
-    probability = [0, 0]
-    mazes = int(input("Number of Mazes: "))
-    cycles = int(input("Number of Cycles per Maze: "))
-    iterations = int(input("Number of Iterations per Cycle: "))
-
-    test_start = time.perf_counter()
-    for i in range(mazes):
-        maze = Maze(maze_size, maze_size, maze_size * maze_size, 30, 5)
-        distance_maze = copy.deepcopy(maze)
-        distance_mat = distance_matrix(distance_maze)
-        maze_size = maze.get_size()
-        with open("MazeBFS_" + str(i + 1) + ".csv", "w") as file:
-            for j in range(cycles):
-                file.write("1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
-                for k in range(iterations):
-                    start = time.perf_counter()
-                    breadthFirstSearch(maze)
-                    end = time.perf_counter()
-                    maze.unsearch_matrix()
-                    maze.switch_walls(probability[0], probability[1])
-                    file.write(str(end-start)+"; ")
-                    print("BFS iteration ends")
-                file.write("\n")
-                print("BFS ends")
-                probability = [probability[0] + 2, probability[1] + 1]
-            file.close()
-        with open("MazeGen_" + str(i + 1) + ".csv", "w") as file:
-            for j in range(cycles):
-                probability = [probability[0] + 2, probability[1] + 1]
-                file.write("1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
-                for k in range(iterations):
-                    start = time.perf_counter()
-                    geneticAlgorithm(maze, distance_mat, maze_size*maze_size*2, False, probability,10, False)
-                    end = time.perf_counter()
-                    file.write(str(end - start) + "; ")
-                    print("Genetic iteration ends")
-                print("Genetic ends")
-                file.write("\n")
-                probability = [probability[0] + 2, probability[1] + 1]
-            file.close()
-    test_end = time.perf_counter()
-    print(f"Test finished after: {test_end-test_start}")
-
 def draw_path(visual, maze, path, color):
     visual.set_maze(maze)
     for i in range(len(path)):
@@ -201,6 +155,102 @@ def print_toggle(toggle, name):
         print(name, '[Activated]')
     else:
         print(name, '[Deactivate]')
+
+def delete_fake_goal_path(maze):
+    bfs_maze = copy.deepcopy(maze)
+    search, history = breadthFirstSearch(bfs_maze)
+    for i in range(len(search)):
+        if maze.get_cell(search[i][0], search[i][1]) == -2:
+            maze.set_cell(search[i][0], search[i][1], 0)
+
+
+def test_time():
+    mazes = int(input("Number of Mazes: "))
+    cycles = int(input("Number of Cycles per Maze: "))
+    iterations = int(input("Number of Iterations per Cycle: "))
+
+    test_start = time.perf_counter()
+
+    for i in range(mazes):
+        maze_size = 10
+        maze = Maze(maze_size, maze_size, maze_size * maze_size, 20, 5)
+        delete_fake_goal_path(maze)
+
+        distance_maze = copy.deepcopy(maze)
+        distance_mat = distance_matrix(distance_maze)
+        maze_size = maze.get_size()
+
+        with open("MazeSearch"+str(i+1)+".csv", "w") as file:
+
+            success_cycle = []
+            probability = [0, 0]
+            write_header(file, "BFS Time: ; Probability; ", "Iteration ", iterations)
+            for j in range(cycles):
+                file.write("Cycle "+str(j+1)+"; 1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
+                success_iter = []
+                for k in range(iterations):
+                    success = "Yes"
+                    start = time.perf_counter()
+                    search, history = breadthFirstSearch(maze)
+                    end = time.perf_counter()
+                    maze.unsearch_matrix()
+                    maze.switch_walls(probability[0], probability[1])
+                    if len(search) == 0:
+                        success = "No"
+                    file.write(str(end-start)+"; ")
+                    success_iter.append(success)
+                success_cycle.append(success_iter)
+                file.write("\n")
+                probability = [probability[0] + 2, probability[1] + 1]
+            print(f"BFS Maze {i + 1} ends")
+
+            write_header(file, "\nBFS Success: ; ", "Iteration ", iterations)
+            write_success(file, success_cycle, cycles, iterations)
+
+            success_cycle = []
+            probability = [0, 0]
+            write_header(file, "\n\nGenetic Time: ; Probability; ", "Iteration ", iterations)
+            for j in range(cycles):
+                file.write("Cycle "+str(j+1)+"; 1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
+                success_iter = []
+                for k in range(iterations):
+                    success = "No"
+                    start = time.perf_counter()
+                    history, move_matrix = geneticAlgorithm(maze, distance_mat, maze_size*maze_size*2, False, probability,10, True)
+                    end = time.perf_counter()
+                    goal_x, goal_y = maze.get_end()
+                    if history[-1] == (int(goal_x), int(goal_y)):
+                        success = "Yes"
+                    file.write(str(end - start) + "; ")
+                    success_iter.append(success)
+                    print("Genetic iteration ends")
+                success_cycle.append(success_iter)
+                print("Genetic Cycle ends")
+                file.write("\n")
+                probability = [probability[0] + 2, probability[1] + 1]
+            print(f"Genetic Maze {i + 1} ends")
+
+            write_header(file, "\nGenetic Success: ; ", "Iteration ", iterations)
+            write_success(file, success_cycle, cycles, iterations)
+            file.close()
+
+    test_end = time.perf_counter()
+    print(f"Test finished after: {test_end-test_start}")
+
+def write_header(file, title, name, iterations):
+    file.write(title)
+    for i in range(iterations):
+        file.write(name + str(i + 1) + "; ")
+    file.write("\n")
+
+def write_success(file, success, cycles, iterations):
+    for a in range(cycles):
+        file.write("Cycle " + str(a + 1) + "; ")
+        for b in range(iterations):
+            file.write(success[a][b] + "; ")
+        file.write("\n")
+
+
 
 def main():
     case = 1

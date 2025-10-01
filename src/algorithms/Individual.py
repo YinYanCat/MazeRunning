@@ -86,8 +86,8 @@ class Individual:
 
         for move in self.gen:
 
+            penalty = 0
             maze.switch_walls(probability[0], probability[1], self.x, self.y)
-
             next_x, next_y = self.x, self.y
 
             if move == 'U':
@@ -119,11 +119,16 @@ class Individual:
                     self.fitness_evaluation.append(0)
                     self.max_fitness = 0
                     break
-                elif next_cell in (0, 1, -1, -2):  # camino válido
+                elif next_cell in (0, 1, -1):  # camino válido
                     self.x, self.y = next_x, next_y
-                else:  # golpea pared
-                    # Penalización
-                    current_fitness = self.fitness(self.x, self.y, distance_matrix) + penalty + 8
+                elif next_cell == -2:
+                    self.x, self.y = next_x, next_y
+                    penalty += 10
+                else:  # Penalización - golpea pared
+                    if next_cell == -5:
+                        current_fitness = self.fitness(self.x, self.y, distance_matrix) + penalty + 1
+                    else:
+                        current_fitness = self.fitness(self.x, self.y, distance_matrix) + penalty + 8
                     self.fitness_evaluation.append(current_fitness)
                     continue
             else:  # fuera de límites
