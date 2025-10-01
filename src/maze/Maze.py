@@ -78,7 +78,7 @@ class Maze:
         return cursor_x, cursor_y
 
     def create_maze(self):
-        self.goal_x,self.goal_y = np.random.randint(0, 20,size=2)
+        self.goal_x,self.goal_y = np.random.randint(0, self.size,size=2)
         self.matrix[self.goal_x][self.goal_y] = -1
         cursor_x, cursor_y = self.goal_x, self.goal_y
         moves = self.moves

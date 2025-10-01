@@ -10,15 +10,15 @@ from src.maze.Maze import Maze
 from src.visuals.Visuals import Visual
 
 def main():
-    maze = Maze(size=20,walkback_attempts=200,moves=900,fake_goal=30,move_walls=5)
+    maze = Maze(size=30,walkback_attempts=200,moves=900,fake_goal=30,move_walls=5)
 
     bfs_maze = copy.deepcopy(maze)
     BFS_Search = False
-
+    gen_maze = copy.deepcopy(maze)
     Gen_Search = False
 
     visual_maze = copy.deepcopy(maze)
-    visual = Visual(20)
+    visual = Visual(30)
     visual.set_maze(visual_maze)
 
     actual_maze = visual_maze
@@ -48,9 +48,10 @@ def main():
                         visual.draw()
 
                 if event.key == pygame.K_g:
-                    actual_maze = bfs_maze
+                    actual_maze = gen_maze
                     loop = True
                     Gen_Search = True
+                    BFS_Search = False
 
                 if event.key == pygame.K_d:
                     distance_maze = copy.deepcopy(maze)
@@ -65,20 +66,22 @@ def main():
             search_maze = copy.deepcopy(actual_maze)
             if BFS_Search:
                 search, history = breadthFirstSearch(search_maze)
-            if Gen_Search:
-                search, history = breadthFirstSearch(search_maze)
-            toview = search
+            elif Gen_Search:
+                distance_maze = copy.deepcopy(maze)
+                distance_mat = distance_matrix(distance_maze)
+                history = geneticAlgorithm(maze=search_maze, distance_matrix=distance_mat, max_generations=200, individual_count=10, until_finds=True)
+            toview = history
             value = -6
-            if len(search) == 0:
-                toview = history
-                value = -7
+            #if len(search) == 0:
+            #    toview = history
+            #    value = -7
             for i in range(len(toview)):
                 x, y = toview[i]
                 if i != 0:
                     visual_maze.visit_cell(x, y, value)
                 visual.draw()
-            time.sleep(3)
-            actual_maze.switch_walls(2)
+            #time.sleep(3)
+            #actual_maze.switch_walls(2)
             visual_maze = copy.deepcopy(actual_maze)
             visual.set_maze(visual_maze)
 
