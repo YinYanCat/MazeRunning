@@ -1,3 +1,4 @@
+import copy
 import random
 
 import numpy as np
@@ -16,6 +17,7 @@ class Maze:
         self.wall_list = []
         self.size = size
         self.matrix = np.zeros((self.size,self.size))
+        self.unsearched_matrix = np.zeros((self.size, self.size))
         self.create_maze()
 
     def get_size(self):
@@ -102,21 +104,21 @@ class Maze:
         for x in range(self.size):
             for y in range(self.size):
                 if self.matrix[x][y] > 0:
-                    self.matrix[x][y] = 0       # Path
+                    self.matrix[x][y] = self.unsearched_matrix[x][y] = 0       # Path
                     if np.random.randint(0, self.prob_fake_goal) == 0:
-                        self.matrix[x][y] = -2  # Fake Goal
+                        self.matrix[x][y] = self.unsearched_matrix[x][y] = -2  # Fake Goal
                     if np.random.randint(0, self.prob_move_walls) == 0:
-                        self.matrix[x][y] = -1  # Path (Can be Wall)
+                        self.matrix[x][y] = self.unsearched_matrix[x][y] = -1  # Path (Can be Wall)
                         self.wall_list.append([x, y])
                 elif self.matrix[x][y] == -2:
                     self.start = [x, y]
-                    self.matrix[x][y] = 1       # Start
+                    self.matrix[x][y] = self.unsearched_matrix[x][y] = 1       # Start
                 elif self.matrix[x][y] == -1:
-                    self.matrix[x][y] = -3      # Goal
+                    self.matrix[x][y]  = self.unsearched_matrix[x][y]= -3      # Goal
                 else:
-                    self.matrix[x][y] = -4      # Wall
+                    self.matrix[x][y] = self.unsearched_matrix[x][y] = -4      # Wall
                     if np.random.randint(0, self.prob_move_walls) == 0:
-                        self.matrix[x][y] = -5  # Wall (Can be Path)
+                        self.matrix[x][y] = self.unsearched_matrix[x][y] = -5  # Wall (Can be Path)
                         self.wall_list.append([x, y])
 
     def switch_walls(self, probability):
@@ -124,9 +126,14 @@ class Maze:
             if self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] == -1:
                 if np.random.randint(0, probability) == 1:
                     self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -5
+                    self.unsearched_matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -5
             else:
                 self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -1
+                self.unsearched_matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -1
 
+    def unsearch_matrix(self):
+        self.matrix = self.unsearched_matrix
+        self.unsearched_matrix = copy.deepcopy(self.matrix)
 
     def is_carveable(self, cursor_x, cursor_y, carve_x, carve_y):
         neigbours = self.cell_neighbours(carve_x,carve_y) + self.cell_corners(carve_x, carve_y)
