@@ -111,9 +111,9 @@ class Maze:
             for y in range(self.size):
                 if self.matrix[x][y] > 0:
                     self.matrix[x][y] = self.unsearched_matrix[x][y] = 0       # Path
-                    if np.random.randint(0, self.prob_fake_goal) == 0:
+                    if self.get_probability(self.prob_fake_goal):
                         self.matrix[x][y] = self.unsearched_matrix[x][y] = -2  # Fake Goal
-                    if np.random.randint(0, self.prob_move_walls) == 0:
+                    if self.get_probability(self.prob_move_walls):
                         self.matrix[x][y] = self.unsearched_matrix[x][y] = -1  # Path (Can be Wall)
                         self.wall_list.append([x, y])
                 elif self.matrix[x][y] == -2:
@@ -122,21 +122,25 @@ class Maze:
                 elif self.matrix[x][y] == -1:
                     self.matrix[x][y]  = self.unsearched_matrix[x][y]= -3      # Goal
                 else:
-                    self.matrix[x][y] = self.unsearched_matrix[x][y] = -4      # Wall
-                    if np.random.randint(0, self.prob_move_walls) == 0:
+                    self.matrix[x][y] = self.unsearched_matrix[x][y] = -4
+                    if self.get_probability(self.prob_move_walls):             # Wall
                         self.matrix[x][y] = self.unsearched_matrix[x][y] = -5  # Wall (Can be Path)
                         self.wall_list.append([x, y])
 
-    def switch_walls(self, probability, x=None, y=None):
+    def get_probability(self, prob):
+        return prob > 0 and np.random.randint(1, prob+1) == 1
+
+    def switch_walls(self, walls, paths, x=None, y=None):
         for i in range(len(self.wall_list)):
             if self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] == -1:
                 if (x is None and y is None) or (x != self.wall_list[i][0] and y != self.wall_list[i][1]):
-                    if np.random.randint(0, probability) == 1:
+                    if self.get_probability(walls):
                         self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -5
                         self.unsearched_matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -5
             else:
-                self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -1
-                self.unsearched_matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -1
+                if self.get_probability(paths):
+                    self.matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -1
+                    self.unsearched_matrix[self.wall_list[i][0]][self.wall_list[i][1]] = -1
 
     def get_move_list(self):
         move_list = []

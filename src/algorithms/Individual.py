@@ -65,7 +65,10 @@ class Individual:
     def fitness(self, x, y, distance_matrix):
         return distance_matrix[x][y] / len(distance_matrix[0])
 
-    def run(self, maze, distance_matrix, saves_maze_changes):
+    def run(self, maze, distance_matrix, saves_maze_changes, probability=None):
+        if probability is None:
+            probability = [1, 1]
+
         self.action_stack = []
         penalty = 0
 
@@ -83,7 +86,7 @@ class Individual:
 
         for move in self.gen:
 
-            maze.switch_walls(2, self.x, self.y)
+            maze.switch_walls(probability[0], probability[1], self.x, self.y)
 
             next_x, next_y = self.x, self.y
 

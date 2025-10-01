@@ -1,6 +1,7 @@
 import time
 
 import pygame
+import csv
 
 from src.algorithms.Individual import *
 from src.algorithms.Genetics import *
@@ -9,7 +10,7 @@ from src.algorithms.BFSearch import *
 from src.maze.Maze import Maze
 from src.visuals.Visuals import Visual
 
-def main():
+def visual_search():
     print('\n-------------\nPROGRAM KEYS:\n-------------')
     print('[B] BFS Algorithm (Toggle to Pause)\n[N] BFS Original Path and Maze\n[M] BFS Best Path and Maze Found')
     print('[G] Genetic Algorithm (Toggle to Pause)\n[I] Instance Visual (Toggle)')
@@ -19,7 +20,7 @@ def main():
     maze_moves = maze_size * maze_size
     maze_fake_goal = 30
     maze_move_wall = 5
-    maze_switch = 3
+    maze_probability = [4,1]
 
     maze = Maze(maze_size,maze_walk_att,maze_moves,maze_fake_goal,maze_move_wall)
     bfs_maze = copy.deepcopy(maze)
@@ -34,7 +35,7 @@ def main():
     distance_mat = distance_matrix(distance_maze)
 
     visual_maze = copy.deepcopy(maze)
-    visual = Visual(40)
+    visual = Visual(20)
     visual.set_maze(visual_maze)
     instant_visual = False
 
@@ -104,14 +105,14 @@ def main():
             draw_path(visual, visual_maze, toview, value)
             time.sleep(1)
             bfs_maze.unsearch_matrix()
-            bfs_maze.switch_walls(maze_switch)
+            bfs_maze.switch_walls(maze_probability[0], maze_probability[1])
 
         elif Gen_Search:
             visual_maze = copy.deepcopy(gen_maze)
             visual.set_maze(visual_maze)
             visual.draw()
             print('Calculating Path...')
-            history, move_matrix = geneticAlgorithm(maze=gen_maze, distance_matrix=distance_mat, max_generations=maze_size*maze_size*2,individual_count=10, until_finds=False)
+            history, move_matrix = geneticAlgorithm(gen_maze, distance_mat, maze_size*maze_size*2, not instant_visual, maze_probability,10, False)
             goal_x, goal_y = maze.get_end()
             if history[-1] == (int(goal_x), int(goal_y)):
                 print(f"Steps to find the goal: {len(history)}")
@@ -126,8 +127,6 @@ def main():
                         if event.key == pygame.K_g:
                             Gen_Search = False
                             print_toggle(Gen_Search, 'Genetic algorithm')
-                if not Gen_Search:
-                    break
                 x, y = history[i]
                 if not instant_visual:
                     visual_maze.set_movable_values(move_matrix[i])
@@ -138,9 +137,52 @@ def main():
                     time.sleep(0.5)
                     visual_maze.set_cell(x, y, aux)
                 visual.draw()
+                if not Gen_Search:
+                    break
             time.sleep(1)
 
     pygame.quit()
+
+def test_time():
+    maze_size = 10
+    probability = [0, 0]
+    type = int(input("BFS [0] or Genetic [1]: "))
+    mazes = int(input("Number of Mazes: "))
+    cycles = int(input("Number of Cycles per Maze: "))
+    iterations = int(input("Number of Iterations per Cycle: "))
+
+
+    for i in range(mazes):
+        maze = Maze(maze_size, maze_size, maze_size * maze_size, 30, 5)
+        if type == 0:
+            with open("MazeBFS_" + str(i + 1) + ".csv", "a") as file:
+                for j in range(cycles):
+                    probability = [probability[0] + 2, probability[1] + 1]
+                    for k in range(iterations):
+                        start = time.perf_counter()
+                        breadthFirstSearch(maze)
+                        end = time.perf_counter()
+                        maze.unsearch_matrix()
+                        maze.switch_walls(probability[0], probability[1])
+                        file.write(str(end-start)+"; ")
+                    file.write("\n")
+                file.close()
+
+        else:
+            distance_maze = copy.deepcopy(maze)
+            distance_mat = distance_matrix(distance_maze)
+            maze_size = maze.get_size()
+            with open("MazeGen_" + str(i + 1) + ".csv", "a") as file:
+                for j in range(cycles):
+                    probability = [probability[0] + 2, probability[1] + 1]
+                    for k in range(iterations):
+                        start = time.perf_counter()
+                        geneticAlgorithm(maze, distance_mat, maze_size*maze_size*2, False, probability,10, False)
+                        end = time.perf_counter()
+                        file.write(str(end - start) + "; ")
+                    file.write("\n")
+                file.close()
+
 
 def draw_path(visual, maze, path, color):
     visual.set_maze(maze)
@@ -155,6 +197,13 @@ def print_toggle(toggle, name):
         print(name, '[Activated]')
     else:
         print(name, '[Deactivate]')
+
+def main():
+    case = 1
+    if case == 1:
+        test_time()
+    else:
+        visual_search()
 
 if __name__ =="__main__":
     main()

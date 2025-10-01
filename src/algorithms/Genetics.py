@@ -6,7 +6,7 @@ def choice(individuals) -> Individual:
     return random.choice(individuals)
 
 
-def geneticAlgorithm(distance_matrix, maze, max_generations, saves_maze_changes, individual_count=10, until_finds=True):
+def geneticAlgorithm(maze, distance_matrix, max_generations, saves_maze_changes, probability, individual_count=10, until_finds=True):
 
     generation = 0
     start_x, start_y = maze.get_start()
@@ -18,7 +18,7 @@ def geneticAlgorithm(distance_matrix, maze, max_generations, saves_maze_changes,
             prob_fitness_cross = generation / maze.get_size()*maze.get_size() / 10
 
         for individual in individuals:
-            individual.run(maze, distance_matrix)
+            individual.run(maze, distance_matrix, saves_maze_changes, probability)
 
         if any(individual.getMaxFitness() == 0 for individual in individuals):
             break
@@ -36,7 +36,7 @@ def geneticAlgorithm(distance_matrix, maze, max_generations, saves_maze_changes,
             if random.randint(0,1) == 1:
                 child.mutate()
             child.grow(1)
-            child.run(maze = maze, distance_matrix=distance_matrix, saves_maze_changes=saves_maze_changes)
+            child.run(maze = maze, distance_matrix=distance_matrix, saves_maze_changes=saves_maze_changes, probability=probability)
             new_individuals.append(child)
 
         individuals = new_individuals
