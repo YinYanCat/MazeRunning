@@ -209,14 +209,14 @@ def test_time():
 
             success_cycle = []
             probability = [0, 0]
-            write_header(file, "\n\nGenetic Time: ; Probability; ", "Iteration ", iterations)
+            write_header(file, "\n\nGenetic Time: ; ", "Iteration ", iterations)
             for j in range(cycles):
-                file.write("Cycle "+str(j+1)+"; 1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
+                file.write("Cycle "+str(j+1)+" 1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
                 success_iter = []
                 for k in range(iterations):
                     success = "No"
                     start = time.perf_counter()
-                    history, move_matrix = geneticAlgorithm(maze, distance_mat, maze_size*maze_size*2, False, probability,10, True)
+                    history, move_matrix = geneticAlgorithm(maze, distance_mat, maze_size*maze_size*2, False, probability,10, False)
                     end = time.perf_counter()
                     goal_x, goal_y = maze.get_end()
                     if history[-1] == (int(goal_x), int(goal_y)):

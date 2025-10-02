@@ -86,6 +86,7 @@ class Individual:
 
         for move in self.gen:
 
+            penalty = 0
             maze.switch_walls(probability[0], probability[1], self.x, self.y)
             next_x, next_y = self.x, self.y
 
