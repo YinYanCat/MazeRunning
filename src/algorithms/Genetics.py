@@ -15,7 +15,7 @@ def geneticAlgorithm(maze, distance_matrix, max_generations, saves_maze_changes,
         if until_finds is False:
             prob_fitness_cross = generation / max_generations / 10
         else:
-            prob_fitness_cross = generation / maze.get_size()*maze.get_size() / 10
+            prob_fitness_cross = generation / (maze.get_size()*maze.get_size()) / 10
 
         for individual in individuals:
             individual.run(maze, distance_matrix, saves_maze_changes, probability)

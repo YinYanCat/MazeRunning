@@ -101,7 +101,7 @@ class Individual:
 
             # Manejo de retrocesos
             if self.action_stack and self.action_stack[-1] == opposites[move]:
-                penalty += 2
+
                 if len(self.action_stack) > 1:
                     self.action_stack.pop()
                 else:

@@ -173,7 +173,7 @@ def test_time():
 
     for i in range(mazes):
         maze_size = 10
-        maze = Maze(maze_size, maze_size, maze_size * maze_size, 20, 5)
+        maze = Maze(size=maze_size, walkback_attempts=maze_size, moves=maze_size * maze_size, fake_goal=20, move_walls=5)
         delete_fake_goal_path(maze)
 
         distance_maze = copy.deepcopy(maze)
@@ -184,9 +184,9 @@ def test_time():
 
             success_cycle = []
             probability = [0, 0]
-            write_header(file, "BFS Time: ; Probability; ", "Iteration ", iterations)
+            write_header(file, "BFS Time: ; ", "Iteration ", iterations)
             for j in range(cycles):
-                file.write("Cycle "+str(j+1)+"; 1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
+                file.write("Cycle "+str(j+1)+" 1/" + str(probability[0]) + " | 1/" + str(probability[1]) + "; ")
                 success_iter = []
                 for k in range(iterations):
                     success = "Yes"
