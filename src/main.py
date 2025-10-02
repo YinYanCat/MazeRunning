@@ -7,12 +7,14 @@ from src.algorithms.BFSearch import *
 from src.maze.Maze import Maze
 from src.visuals.Visuals import Visual
 
-
-def visual_search():
+def print_visual_keys():
     print('\n-------------------\nVISUAL SEARCH KEYS:\n-------------------')
     print('[B] BFS Algorithm\n[N] BFS Original path and maze\n[M] BFS Best path and maze found')
     print('[G] Genetic Algorithm\n[H] Genetic Algorithm - Path Only')
-    print('[Q] Quit current search\n[R] Generate New Maze')
+    print('[Q] Quit current search\n[R] Generate New Maze\n')
+
+def visual_search():
+    print_visual_keys()
 
     maze_size = 20
     maze_walk_att = maze_size
@@ -61,6 +63,7 @@ def visual_search():
                     distance_mat = distance_matrix(distance_maze)
                     visual_maze = copy.deepcopy(maze)
                     visual.set_maze(visual_maze)
+                    print('R: New Maze Generated!')
 
                 if event.key == pygame.K_b:
                     if not BFS_Search:
@@ -105,6 +108,7 @@ def visual_search():
                     BFS_Search = False
                     Gen_Search = False
                     print('Q: Quitting search...')
+                    print_visual_keys()
 
         visual.draw()
 
