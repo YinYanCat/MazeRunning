@@ -86,7 +86,6 @@ class Individual:
 
         for move in self.gen:
 
-            penalty = 0
             maze.switch_walls(probability[0], probability[1], self.x, self.y)
             next_x, next_y = self.x, self.y
 
@@ -101,7 +100,7 @@ class Individual:
 
             # Manejo de retrocesos
             if self.action_stack and self.action_stack[-1] == opposites[move]:
-
+                penalty += 2
                 if len(self.action_stack) > 1:
                     self.action_stack.pop()
                 else:
