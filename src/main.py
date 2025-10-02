@@ -15,7 +15,7 @@ def visual_search():
     maze_size = 10
     maze_walk_att = maze_size * 3
     maze_moves = maze_size * maze_size
-    maze_fake_goal = 20
+    maze_fake_goal = 10
     maze_move_wall = 5
     maze_probability = [4,1]
 

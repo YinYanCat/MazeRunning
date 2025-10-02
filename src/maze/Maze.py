@@ -6,9 +6,9 @@ import pygame
 
 
 def get_probability(prob):
-    if prob > 0:
+    if prob <= 0:
         return False
-    return prob > 0 and np.random.randint(1, prob+1) == 1
+    return np.random.randint(1, prob+1) == 1
 
 
 class Maze:
