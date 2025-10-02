@@ -1,5 +1,8 @@
 import random
 
+import numpy as np
+
+
 class Individual:
 
     def __init__(self, x, y):
@@ -66,6 +69,7 @@ class Individual:
         return distance_matrix[x][y] / len(distance_matrix[0])
 
     def run(self, maze, distance_matrix, saves_maze_changes, probability=None):
+        visit_matrix = np.zeros((maze.size,maze.size))
         if probability is None:
             probability = [1, 1]
 
@@ -138,6 +142,10 @@ class Individual:
 
             # Calcular fitness después de moverse
             current_fitness = self.fitness(self.x, self.y, distance_matrix) + penalty
+            if visit_matrix[self.x][self.y] == 1:
+                current_fitness += 1
+            else:
+                visit_matrix[self.x][self.y] = 1
             self.history.append((self.x, self.y))
 
             if saves_maze_changes:

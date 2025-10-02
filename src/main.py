@@ -253,7 +253,7 @@ def write_success(file, success, cycles, iterations):
 
 
 def main():
-    case = 1
+    case = 0
     if case == 1:
         test_time()
     else:
